@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String
+  telegramId      String?  @unique
+  telegramToken   String?  @unique
+  monthlyKwh      Float
+  currentProvider String
+  zipCode         String
+  notifEmail      Boolean  @default(true)
+  notifTelegram   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  alerts          Alert[]
+
+  @@map("users")
+}
+
+model Price {
+  id          String   @id @default(uuid())
+  date        DateTime @db.Date
+  provider    String
+  tariffType  String
+  costPerKwh  Float
+  createdAt   DateTime @default(now())
+
+  @@unique([date, provider])
+  @@index([date])
+  @@map("prices")
+}
+
+model Alert {
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sentAt            DateTime @default(now())
+  oldProvider       String
+  newBestProvider   String
+  estimatedSavings  Float
+  channel           String
+
+  @@index([userId])
+  @@map("alerts")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
