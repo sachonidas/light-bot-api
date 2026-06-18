@@ -6,6 +6,7 @@ import { logger } from './lib/logger';
 import { errorHandler } from './middleware/errorHandler';
 import authRoutes from './routes/auth.routes';
 import pricesRoutes from './routes/prices.routes';
+import userRoutes from './routes/user.routes';
 import seedRoutes from './routes/seed.routes';
 import { startScheduler } from './services/scheduler.service';
 
@@ -23,6 +24,7 @@ app.use(
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/prices', pricesRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/seed', seedRoutes);
 
 app.use(errorHandler);
