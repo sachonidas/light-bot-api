@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import { logger } from '../lib/logger';
 import { prisma } from '../lib/prisma';
 import { BestOffer } from '../types';
+import { sendTelegramAlert } from './telegram.service';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const MIN_SAVINGS = 5; // €/mes mínimo para disparar alerta
@@ -50,6 +51,16 @@ export async function evaluateAndNotifyUsers(): Promise<void> {
 
     if (user.notifEmail) {
       await sendEmailAlert(user.email, user.currentProvider, bestOffer);
+    }
+
+    if (user.notifTelegram && user.telegramId) {
+      const msg =
+        `⚡ <b>Nueva tarifa más barata</b>\n\n` +
+        `Tu proveedor: <b>${user.currentProvider}</b>\n` +
+        `Mejor opción: <b>${bestOffer.provider}</b>\n` +
+        `Precio: <b>${bestOffer.costPerKwh.toFixed(4)} €/kWh</b>\n` +
+        `Ahorro estimado: <b>${bestOffer.savings.toFixed(2)}€/mes</b>`;
+      await sendTelegramAlert(user.telegramId, msg);
     }
 
     await prisma.alert.create({

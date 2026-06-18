@@ -9,6 +9,7 @@ import pricesRoutes from './routes/prices.routes';
 import userRoutes from './routes/user.routes';
 import seedRoutes from './routes/seed.routes';
 import { startScheduler } from './services/scheduler.service';
+import { startTelegramBot } from './services/telegram.service';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -32,4 +33,5 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   logger.info(`Servidor corriendo en puerto ${PORT}`);
   startScheduler();
+  startTelegramBot();
 });
