@@ -12,8 +12,7 @@ async function fetchPVPCPrices(): Promise<{ date: string; value: number }[]> {
     `${ESIOS_BASE_URL}/indicators/${PVPC_INDICATOR}?start_date=${today}T00:00&end_date=${today}T23:59`,
     {
       headers: {
-        Authorization: `Token token="${process.env.ESIOS_API_KEY}"`,
-        'Content-Type': 'application/json',
+        'x-api-key': process.env.ESIOS_API_KEY ?? '',
         'Accept': 'application/json',
       },
     }
@@ -23,8 +22,13 @@ async function fetchPVPCPrices(): Promise<{ date: string; value: number }[]> {
     throw new Error(`ESIOS API error: ${res.status}`);
   }
 
-  const data = await res.json() as { indicator?: { values: { date: string; value: number }[] } };
-  return data.indicator?.values ?? [];
+  const data = await res.json() as {
+    indicator?: { values: { datetime: string; value: number; geo_id: number }[] }
+  };
+  // Only Peninsula (geo_id 8741), discard other zones
+  return (data.indicator?.values ?? [])
+    .filter((v) => v.geo_id === 8741)
+    .map((v) => ({ date: v.datetime, value: v.value }));
 }
 
 export async function syncDailyPrices(): Promise<void> {

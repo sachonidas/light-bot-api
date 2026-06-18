@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
+import { syncDailyPrices } from '../services/esios.service';
 
 const router = Router();
 
@@ -40,6 +41,14 @@ router.post('/', async (_req, res) => {
   await prisma.price.createMany({ data: records, skipDuplicates: true });
 
   return res.json({ message: `${records.length} precios insertados` });
+});
+
+router.post('/esios-sync', async (_req, res) => {
+  if (process.env.NODE_ENV !== 'development') {
+    return res.status(403).json({ error: 'Solo disponible en desarrollo' });
+  }
+  await syncDailyPrices();
+  return res.json({ message: 'Sincronización ESIOS completada' });
 });
 
 export default router;
