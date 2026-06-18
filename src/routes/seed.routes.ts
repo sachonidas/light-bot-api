@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
-import { syncDailyPrices } from '../services/esios.service';
+import { syncDailyPrices, syncHistoricalPrices } from '../services/esios.service';
 
 const router = Router();
 
@@ -49,6 +49,14 @@ router.post('/esios-sync', async (_req, res) => {
   }
   await syncDailyPrices();
   return res.json({ message: 'Sincronización ESIOS completada' });
+});
+
+router.post('/esios-history', async (_req, res) => {
+  if (process.env.NODE_ENV !== 'development') {
+    return res.status(403).json({ error: 'Solo disponible en desarrollo' });
+  }
+  const count = await syncHistoricalPrices(90);
+  return res.json({ message: `${count} días de histórico PVPC importados` });
 });
 
 export default router;
